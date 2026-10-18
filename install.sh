@@ -41,19 +41,24 @@ fi
 cp -f $PROJECT_DIR/plr.cfg $USER_HOME/printer_data/config/ && echo "plr.cfg copied successfully." || echo "Error copying plr.cfg."
 # Auto replace path
 sed -i -E "s|\{USER_HOME\}|$USER_HOME|i" $USER_HOME/printer_data/config/plr.cfg
-sed -i -E "s|\{PLR_DIR\}|$USER_HOME/printer_data/plr|i" $USER_HOME/printer_data/config/plr.cfg
+sed -i -E "s|\{PLR_DIR\}|$USER_HOME/printer_data/config/plr|i" $USER_HOME/printer_data/config/plr.cfg
 
-cp -f $PROJECT_DIR/gcode_shell_command.py $KLIPPER_DIR/klippy/extras/ && echo "gcode_shell_command.py copied successfully." || echo "Error copying gcode_shell_command.py."
+# Kalico ships gcode_shell_command.py; only install ours if Klipper has no such extra
+if [ -f $KLIPPER_DIR/klippy/extras/gcode_shell_command.py ]; then
+  echo "gcode_shell_command.py already present in Klipper, not overwriting it."
+else
+  cp -f $PROJECT_DIR/gcode_shell_command.py $KLIPPER_DIR/klippy/extras/ && echo "gcode_shell_command.py copied successfully." || echo "Error copying gcode_shell_command.py."
+fi
 
 # Use rsync to copy, overwriting existing files and create the folder if it does not exist
-rsync $PROJECT_DIR/plr.sh $USER_HOME/printer_data/plr/ && echo "plr.sh copied successfully." || echo "Error copying plr.sh."
-rsync $PROJECT_DIR/clear_plr.sh $USER_HOME/printer_data/plr/ && echo "clear_plr.sh copied successfully." || echo "Error copying clear_plr.sh."
+rsync $PROJECT_DIR/plr.sh $USER_HOME/printer_data/config/plr/ && echo "plr.sh copied successfully." || echo "Error copying plr.sh."
+rsync $PROJECT_DIR/clear_plr.sh $USER_HOME/printer_data/config/plr/ && echo "clear_plr.sh copied successfully." || echo "Error copying clear_plr.sh."
 # Auto replace path
-sed -i -E "s|\{USER_HOME\}|$USER_HOME|i" $USER_HOME/printer_data/plr/plr.sh
-sed -i -E "s|\{USER_HOME\}|$USER_HOME|i" $USER_HOME/printer_data/plr/clear_plr.sh
+sed -i -E "s|\{USER_HOME\}|$USER_HOME|i" $USER_HOME/printer_data/config/plr/plr.sh
+sed -i -E "s|\{USER_HOME\}|$USER_HOME|i" $USER_HOME/printer_data/config/plr/clear_plr.sh
 # Make plr.sh & clear_plr.sh executable
-chmod +x $USER_HOME/printer_data/plr/plr.sh && echo "plr.sh made executable." || echo "Error making plr.sh executable."
-chmod +x $USER_HOME/printer_data/plr/clear_plr.sh && echo "clear_plr.sh made executable." || echo "Error making clear_plr.sh executable."
+chmod +x $USER_HOME/printer_data/config/plr/plr.sh && echo "plr.sh made executable." || echo "Error making plr.sh executable."
+chmod +x $USER_HOME/printer_data/config/plr/clear_plr.sh && echo "clear_plr.sh made executable." || echo "Error making clear_plr.sh executable."
 
 # Check if printer.cfg exists, create it if it doesn't
 if [ ! -f $USER_HOME/printer_data/config/printer.cfg ]; then
@@ -138,8 +143,8 @@ cat > $USER_HOME/printer_data/config/update_plr.cfg << EOF
 [update_manager KlipperPLR]
 type: git_repo
 path: ~/KlipperPLR
-origin: https://github.com/bigtreetech/KlipperPLR.git
-primary_branch: main
+origin: https://github.com/ostiauren/KlipperPLR.git
+primary_branch: custom
 install_script: install.sh
 is_system_service: False
 

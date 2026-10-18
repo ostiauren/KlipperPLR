@@ -27,9 +27,11 @@ if [ -f "$USER_HOME/printer_data/config/update_plr.cfg" ]; then
     rm "$USER_HOME/printer_data/config/update_plr.cfg"
 fi
 
-if [ -d "$USER_HOME/printer_data/plr" ]; then
-    rm -r "$USER_HOME/printer_data/plr"
-fi
+for d in "$USER_HOME/printer_data/config/plr" "$USER_HOME/printer_data/plr"; do
+    if [ -d "$d" ]; then
+        rm -r "$d"
+    fi
+done
 
 if [ -d "$USER_HOME/printer_data/gcodes/plr/" ]; then
     rm -r "$USER_HOME/printer_data/gcodes/plr/"

@@ -1,4 +1,8 @@
 #!/bin/bash
+# Match the Z value literally (escape the dot) and accept it with or without a leading zero,
+# since the slicer writes both "Z.8" and "Z0.842857"
+ZREQ="${1#0}"
+set -- "0\\?$(printf '%s' "$ZREQ" | sed 's/\./\\./g')" "${@:2}"
 #SD_PATH=~/gcode_files
 #cat ${2} > /tmp/plrtmpA.$$
 mkdir -p {USER_HOME}/printer_data/gcodes/plr/
@@ -16,6 +20,12 @@ PLR_PATH={USER_HOME}/printer_data/gcodes/plr/
 #SD_PATH=~/gcode_files
 #cat ${SD_PATH}/${2} > {USER_HOME}/plrtmpA.$$
 cat "${filepath}" > {USER_HOME}/plrtmpA.$$
+# Abort if the Z height isn't in the gcode, instead of writing the whole print as the resume file
+if ! grep -q " Z${1}[^0-9]*$" {USER_HOME}/plrtmpA.$$; then
+ echo "plr: Z${ZREQ} not found in ${filepath}, nothing to resume"
+ rm -f ${PLR_PATH}/"${plr}" {USER_HOME}/plrtmpA.$$
+ exit 1
+fi
 cat {USER_HOME}/plrtmpA.$$ | sed -e '1,/Z'${1}'/ d' | sed -ne '/ Z/,$ p' | grep -m 1 ' Z' | sed -ne 's/.* Z\([^ ]*\).*/SET_KINEMATIC_POSITION Z=\1/p' > ${PLR_PATH}/"${plr}"
 #echo 'START_TEMPS' >> ${SD_PATH}/plr.gcode
 echo 'M118 START_TEMPS...' >> ${PLR_PATH}/"${plr}"
